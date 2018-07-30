@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">My Application</string>
+
+    <string name="prhybrid">地圖與衛星圖</string>
+    <string name="roadmap">地圖</string>
+    <string name="satellite">衛星圖</string>
+    <string name="terrain">地圖與地形圖</string>
+</resources>

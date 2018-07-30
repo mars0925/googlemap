@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>GoogleMap</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPIyT_dWfI0gygmSyLm6HIoOItUwg08oc"></script>
+    <!--記得要將markerwithlabel.js放到同一個資料夾-->
+    <script type="text/javascript" src="markerwithlabel.js"></script>
+    <script>
+
+	var map;//宣告地圖變數
+	/*取得中心座標
+	 *傳回去android
+	 */
+	function getCenter() {
+		return map.getCenter().toString();
+	}
+
+	/*選擇地圖類型,根據app的選擇改變類型*/
+	function getMaptype(str) {
+	    map.setMapTypeId(str)//設定地圖類型
+	}
+
+
+	/*初始化地圖*/
+	function initialize() {
+		/*app 傳入參數*/
+		var centerLat = AndroidFunction.getLat();//地圖中心的經度
+		var centerLng = AndroidFunction.getLng();//地圖中心的緯度
+		var locationdata = AndroidFunction.getLocation();//附近活動的資料
+
+		locationArray = JSON.parse(locationdata) //剖析成js可以用的array
+
+		//設定地圖選項
+		var options = {
+			zoom: 12,//縮放尺寸
+			center: {lat:centerLat, lng:centerLng},//地圖中心座標
+			streetViewControl:false, //地圖與街景切換UI關閉
+			mapTypeControl:false, //地圖與衛星類型 UI關閉
+			zoomControl:true, //放大縮小地圖UI關閉
+			scaleControl:true
+		};
+
+		//裝地圖的元素
+		var element = document.getElementById('map');
+
+		//新地圖
+		map = new google.maps.Map(element, options);
+
+
+		//利用迴圈將地點全部做標記
+		for(var i = 0;i < locationArray.length;i++){
+		var posObj = locationArray[i];
+		var posi = {lat:posObj.lat, lng:posObj.lng};
+		addMarker(posi,posObj.imagepath,posObj.message,posObj.frequency)
+		}
+
+		/*新增標記Function
+		 *location地點座標
+		 *icon活動照片
+		 *message 訊息欄內容
+		 */
+		function addMarker(location, icon, message,frequency) {
+			var marker = new MarkerWithLabel({
+					position: location,
+					draggable: false,
+					raiseOnDrag: false,
+					map: map,
+					labelContent: frequency,
+					labelAnchor: new google.maps.Point(-10, 45),
+					labelStyle: { //標題style樣式
+						color: "#ff0000",
+						fontSize: "10px"
+					}
+				});
+
+			//檢查是否有Icon圖片
+			if (icon) {
+				//設定icon
+				marker.setIcon(icon)
+			}
+
+			//檢查是否有訊息框
+			if (message) {
+				var infoWindow = new google.maps.InfoWindow({
+						content: message
+					});
+
+				marker.addListener('click', function () {
+					infoWindow.open(map, marker);
+				});
+			}
+		}
+
+		/*設定監聽事件都拖曳結束後兩秒在中心點加標記*/
+		map.addListener('dragend', function () {
+			window.setTimeout(function () {
+				window.alert(map.getCenter()); //取得地圖中心點的座標
+				window.alert(map.getZoom())
+				addMarker(map.getCenter(), "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png", '<h1>善導寺</h1>')
+			}, 2000);
+			});
+		}
+
+		google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>
